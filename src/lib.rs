@@ -4,6 +4,7 @@
 
 extern crate serde_xml;
 extern crate serde;
+extern crate regex;
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -11,6 +12,8 @@ use std::fs::File;
 use std::io::Read;
 
 use serde::de;
+
+use regex::Regex;
 
 pub type XmlError = serde_xml::Error;
 
@@ -64,19 +67,19 @@ fn deserialize_properties<D: de::Deserializer>(deserializer: &mut D)
         let val = match &raw_prop.type_[..] {
             "" | "string" => Property::String(raw_prop.value),
             "float" => {
-                Property::Float(try!(raw_prop.value.parse().map_err(|e: ParseFloatError| {
-                    de::Error::custom(e.description())
-                })))
+                Property::Float(try!(raw_prop.value
+                    .parse()
+                    .map_err(|e: ParseFloatError| de::Error::custom(e.description()))))
             }
             "bool" => {
-                Property::Bool(try!(raw_prop.value.parse().map_err(|e: ParseBoolError| {
-                    de::Error::custom(e.description())
-                })))
+                Property::Bool(try!(raw_prop.value
+                    .parse()
+                    .map_err(|e: ParseBoolError| de::Error::custom(e.description()))))
             }
             "int" => {
-                Property::Int(try!(raw_prop.value.parse().map_err(|e: ParseIntError| {
-                    de::Error::custom(e.description())
-                })))
+                Property::Int(try!(raw_prop.value
+                    .parse()
+                    .map_err(|e: ParseIntError| de::Error::custom(e.description()))))
             }
             s => return Err(de::Error::custom(format!("unexpected property type: '{}'", s))),
         };
@@ -128,11 +131,88 @@ pub struct Layer {
     pub data: Data,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, PartialEq, Eq)]
+pub enum DataEncoding {
+    Base64,
+    CSV,
+    XML,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum DataCompression {
+    None,
+    Zlib,
+}
+
+#[derive(Debug)]
 pub struct Data {
-    pub encoding: Option<String>,
-    pub compression: Option<String>, /* #[serde(rename(deserialize="$value"))]
-                                      * pub value: Option<String>, */
+    pub encoding: DataEncoding,
+    pub compression: DataCompression,
+
+    pub tile_gids: Vec<u32>,
+}
+
+impl de::Deserialize for Data {
+    fn deserialize<D: de::Deserializer>(deserializer: &mut D) -> Result<Data, D::Error> {
+        use serde_xml::value::{self, Element, Content};
+
+        let data_elem: Element = try!(de::Deserialize::deserialize(deserializer));
+        println!("data: {:#?}", data_elem);
+
+        let enc = match data_elem.attributes.get("encoding") {
+            Some(v) => {
+                if v.len() != 1 {
+                    return Err(de::Error::custom(format!("expected exactly one encoding, got: '{:?}'", v)));
+                }
+
+                match &*v[0] {
+                    "base64" => DataEncoding::Base64,
+                    "csv" => DataEncoding::CSV,
+                    s => return Err(de::Error::custom(format!("unexpected encoding: '{}'", s))),
+                }
+            },
+            None => DataEncoding::XML,
+        };
+
+        let comp = match data_elem.attributes.get("compression") {
+            Some(v) => {
+                if v.len() != 1 {
+                    return Err(de::Error::custom(format!("expected exactly one compression, got: '{:?}'", v)));
+                }
+
+                match &*v[0] {
+                    "zlib" => DataCompression::Zlib,
+                    s => return Err(de::Error::custom(format!("unexpected compression: '{}'", s))),
+                }
+            },
+            None => DataCompression::None,
+        };
+
+        if comp != DataCompression::None {
+            return Err(de::Error::custom("compression not yet supported"));
+        }
+
+        if enc != DataEncoding::CSV {
+            return Err(de::Error::custom("other encoding than CSV not yet supported"));
+        }
+
+        let data_text = match data_elem.members {
+            Content::Text(s) => s,
+            _ => return Err(de::Error::custom("expected text inside data")),
+        };
+
+        let csv_regex = Regex::new(r"(\d+)").unwrap();
+        let gids: Vec<u32> = csv_regex.captures_iter(&data_text)
+            .map(|cap| cap.at(1).unwrap())
+            .map(|s| s.parse().unwrap())
+            .collect();
+
+        Ok(Data {
+            encoding: enc,
+            compression: comp,
+            tile_gids: gids,
+        })
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -164,16 +244,16 @@ pub struct Map {
 
 impl Map {
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
-        let mut file = File::open(path)?;;
+        let mut file = File::open(path)?;
         let mut content = String::new();
-        file.read_to_string(&mut content)?;;
+        file.read_to_string(&mut content)?;
 
-        Ok(serde_xml::from_str(&content)?))
+        Ok(serde_xml::from_str(&content)?)
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
-}
+// #[cfg(test)]
+// mod tests {
+//     #[test]
+//     fn it_works() {}
+// }
