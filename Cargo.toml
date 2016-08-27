@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
 [dependencies]
-serde = "0.7.5"
-serde_macros = "0.7.5"
-serde_xml = "0.7.0"
+serde = "0.8.4"
+serde_macros = "0.8"
+serde_xml = "0.8.1"
 regex = "0.1.71"

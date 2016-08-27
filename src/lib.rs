@@ -35,12 +35,12 @@ pub enum Property {
 
 #[derive(Debug, Deserialize)]
 pub struct Tile {
-    id: u32,
+    pub id: u32,
 
     #[serde(deserialize_with="::properties::deserialize_properties")]
     #[serde(default)]
-    properties: Option<Properties>,
-    image: Option<Image>,
+    pub properties: Option<Properties>,
+    pub image: Option<Image>,
 }
 
 #[derive(Debug, Deserialize)]
