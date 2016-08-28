@@ -26,11 +26,13 @@ impl DataEncoding {
             DataEncoding::CSV => {
                 let data_text = match data_content {
                     &Content::Text(ref s) => s,
-                    _ => return Err(de::Error::custom("expected text inside data when decoding CSV")),
+                    _ => {
+                        return Err(de::Error::custom("expected text inside data when decoding CSV"))
+                    }
                 };
 
                 Ok(decode_csv_data(&data_text))
-            },
+            }
             _ => return Err(de::Error::custom(format!("not yet supported encoding: '{:?}'", self))),
         }
 
@@ -58,7 +60,9 @@ impl de::Deserialize for Data {
         let enc = match data_elem.attributes.get("encoding") {
             Some(v) => {
                 if v.len() != 1 {
-                    return Err(de::Error::custom(format!("expected exactly one encoding, got: '{:?}'", v)));
+                    return Err(de::Error::custom(format!("expected exactly one encoding, got: \
+                                                          '{:?}'",
+                                                         v)));
                 }
 
                 match &*v[0] {
@@ -66,21 +70,23 @@ impl de::Deserialize for Data {
                     "csv" => DataEncoding::CSV,
                     s => return Err(de::Error::custom(format!("unexpected encoding: '{}'", s))),
                 }
-            },
+            }
             None => DataEncoding::XML,
         };
 
         let comp = match data_elem.attributes.get("compression") {
             Some(v) => {
                 if v.len() != 1 {
-                    return Err(de::Error::custom(format!("expected exactly one compression, got: '{:?}'", v)));
+                    return Err(de::Error::custom(format!("expected exactly one compression, \
+                                                          got: '{:?}'",
+                                                         v)));
                 }
 
                 match &*v[0] {
                     "zlib" => DataCompression::Zlib,
                     s => return Err(de::Error::custom(format!("unexpected compression: '{}'", s))),
                 }
-            },
+            }
             None => DataCompression::None,
         };
 

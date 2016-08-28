@@ -10,6 +10,8 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
+#[macro_use]
+mod util;
 mod data;
 mod properties;
 
@@ -57,13 +59,12 @@ pub struct Tileset {
     pub columns: u32,
 }
 
-#[derive(Debug, Deserialize)]
-pub enum Orientation {
-    Orthogonal,
-    Isometric,
-    Hexagonal,
-    Shifted,
-}
+enum_str!(Orientation {
+    Orthogonal("orthogonal"),
+    Isometric("isometric"),
+    Hexagonal("hexagonal"),
+    Staggered("staggered"),
+});
 
 #[derive(Debug, Deserialize)]
 pub struct Layer {
@@ -82,7 +83,7 @@ pub struct Map {
 
     pub version: String,
 
-    pub orientation: String,
+    pub orientation: Orientation,
 
     pub renderorder: String,
 
@@ -111,9 +112,3 @@ impl Map {
         Ok(serde_xml::from_str(&content)?)
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn it_works() {}
-// }
