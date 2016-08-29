@@ -1,6 +1,9 @@
 use serde::de;
 use regex::Regex;
 
+use base64;
+use byteorder::{ReadBytesExt, LittleEndian};
+
 use serde_xml::value::{Element, Content};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -33,6 +36,24 @@ impl DataEncoding {
 
                 Ok(decode_csv_data(&data_text))
             }
+            DataEncoding::Base64 => {
+                let data_text = match data_content {
+                    &Content::Text(ref s) => s.trim(),
+                    _ => {
+                        return Err(de::Error::custom("expected text inside data when decoding XML"))
+                    }
+                };
+
+                let decoded_raw: Vec<u8> = try!(base64::decode(&data_text)
+                                                .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e))));
+
+                // TODO: decompress
+
+                decoded_raw.chunks(4)
+                    .map(|mut bytes| bytes.read_u32::<LittleEndian>()
+                         .map_err(|e| de::Error::custom(format!("could not decode from little endian(base64): {}", e))))
+                    .collect()
+            }
             _ => return Err(de::Error::custom(format!("not yet supported encoding: '{:?}'", self))),
         }
 
@@ -43,6 +64,7 @@ impl DataEncoding {
 pub enum DataCompression {
     None,
     Zlib,
+    Gzip,
 }
 
 #[derive(Debug)]
@@ -84,6 +106,7 @@ impl de::Deserialize for Data {
 
                 match &*v[0] {
                     "zlib" => DataCompression::Zlib,
+                    "gzip" => DataCompression::Gzip,
                     s => return Err(de::Error::custom(format!("unexpected compression: '{}'", s))),
                 }
             }
@@ -94,8 +117,8 @@ impl de::Deserialize for Data {
             return Err(de::Error::custom("compression not yet supported"));
         }
 
-        if enc != DataEncoding::CSV {
-            return Err(de::Error::custom("other encoding than CSV not yet supported"));
+        if enc == DataEncoding::XML {
+            return Err(de::Error::custom("XML encoding not yet supported"));
         }
 
         let gids = try!(enc.decode(&data_elem.members));

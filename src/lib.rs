@@ -5,6 +5,8 @@
 extern crate serde_xml;
 extern crate serde;
 extern crate regex;
+extern crate base64;
+extern crate byteorder;
 
 use std::path::Path;
 use std::fs::File;
