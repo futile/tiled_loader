@@ -6,6 +6,8 @@ use byteorder::{ReadBytesExt, LittleEndian};
 
 use serde_xml::value::{Element, Content};
 
+use std::borrow::Cow;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum DataEncoding {
     Base64,
@@ -14,7 +16,10 @@ pub enum DataEncoding {
 }
 
 impl DataEncoding {
-    pub fn decode<E: de::Error>(&self, data_content: &Content) -> Result<Vec<u32>, E> {
+    pub fn decode<E: de::Error>(&self,
+                                data_content: &Content,
+                                compression: &DataCompression)
+                                -> Result<Vec<u32>, E> {
         match *self {
             DataEncoding::CSV => {
                 let data_text = match data_content {
@@ -44,9 +49,9 @@ impl DataEncoding {
                 let decoded_raw: Vec<u8> = try!(base64::decode(&data_text)
                     .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e))));
 
-                // TODO: decompress
+                let decompressed = try!(compression.decompress(&decoded_raw.as_slice()));
 
-                decoded_raw.chunks(4)
+                decompressed.chunks(4)
                     .map(|mut bytes| {
                         bytes.read_u32::<LittleEndian>().map_err(|e| {
                             de::Error::custom(format!("could not decode from little \
@@ -67,6 +72,42 @@ pub enum DataCompression {
     None,
     Zlib,
     Gzip,
+}
+
+impl DataCompression {
+    fn decompress<'a, E: de::Error>(&self, compressed: &'a [u8]) -> Result<Cow<'a, [u8]>, E> {
+        use std::io::Read;
+
+        match *self {
+            DataCompression::None => Ok(Cow::Borrowed(compressed)),
+            DataCompression::Zlib => {
+                use flate2::read::ZlibDecoder;
+
+                let mut decoder = ZlibDecoder::new(compressed);
+                let mut decoded = Vec::new();
+
+                try!(decoder.read_to_end(&mut decoded).map_err(|e| {
+                    de::Error::custom(format!("Could not decode zlib-compressed data: {}", e))
+                }));
+
+                Ok(Cow::Owned(decoded))
+            }
+            DataCompression::Gzip => {
+                use flate2::read::GzDecoder;
+
+                let mut decoder = try!(GzDecoder::new(compressed).map_err(|e| {
+                    de::Error::custom(format!("Could not create gzip-decoder: {}", e))
+                }));
+                let mut decoded = Vec::new();
+
+                try!(decoder.read_to_end(&mut decoded).map_err(|e| {
+                    de::Error::custom(format!("Could not decode gzip-compressed data: {}", e))
+                }));
+
+                Ok(Cow::Owned(decoded))
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -115,15 +156,11 @@ impl de::Deserialize for Data {
             None => DataCompression::None,
         };
 
-        if comp != DataCompression::None {
-            return Err(de::Error::custom("compression not yet supported"));
-        }
-
         if enc == DataEncoding::XML {
             return Err(de::Error::custom("XML encoding not yet supported"));
         }
 
-        let gids = try!(enc.decode(&data_elem.members));
+        let gids = try!(enc.decode(&data_elem.members, &comp));
 
         Ok(Data {
             encoding: enc,

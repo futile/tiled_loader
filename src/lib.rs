@@ -7,6 +7,7 @@ extern crate serde;
 extern crate regex;
 extern crate base64;
 extern crate byteorder;
+extern crate flate2;
 
 use std::path::Path;
 use std::fs::File;
