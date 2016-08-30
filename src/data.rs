@@ -13,16 +13,6 @@ pub enum DataEncoding {
     XML,
 }
 
-pub fn decode_csv_data(data_text: &str) -> Vec<u32> {
-    let csv_regex = Regex::new(r"(\d+)").unwrap();
-    csv_regex.captures_iter(&data_text)
-        .map(|cap| cap.at(1).unwrap())
-        .map(|s| s.parse().unwrap()) // TODO: should not unwrap, but return an error
-        .collect()
-}
-
-
-
 impl DataEncoding {
     pub fn decode<E: de::Error>(&self, data_content: &Content) -> Result<Vec<u32>, E> {
         match *self {
@@ -34,7 +24,14 @@ impl DataEncoding {
                     }
                 };
 
-                Ok(decode_csv_data(&data_text))
+                let csv_regex = Regex::new(r"(\d+)").unwrap();
+                csv_regex.captures_iter(&data_text)
+                    .map(|cap| cap.at(1).unwrap())
+                    .map(|s| {
+                        s.parse()
+                            .map_err(|e| de::Error::custom(format!("could not decode CSV: {}", e)))
+                    })
+                    .collect()
             }
             DataEncoding::Base64 => {
                 let data_text = match data_content {
@@ -45,13 +42,18 @@ impl DataEncoding {
                 };
 
                 let decoded_raw: Vec<u8> = try!(base64::decode(&data_text)
-                                                .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e))));
+                    .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e))));
 
                 // TODO: decompress
 
                 decoded_raw.chunks(4)
-                    .map(|mut bytes| bytes.read_u32::<LittleEndian>()
-                         .map_err(|e| de::Error::custom(format!("could not decode from little endian(base64): {}", e))))
+                    .map(|mut bytes| {
+                        bytes.read_u32::<LittleEndian>().map_err(|e| {
+                            de::Error::custom(format!("could not decode from little \
+                                                       endian(base64): {}",
+                                                      e))
+                        })
+                    })
                     .collect()
             }
             _ => return Err(de::Error::custom(format!("not yet supported encoding: '{:?}'", self))),
