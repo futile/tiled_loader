@@ -29,8 +29,15 @@ impl DataEncoding {
                     }
                 };
 
-                let csv_regex = Regex::new(r"(\d+)").unwrap();
-                csv_regex.captures_iter(&data_text)
+                if compression != &DataCompression::None {
+                    return Err(de::Error::custom("compression with csv-encoding not allowed"));
+                }
+
+                lazy_static! {
+                    static ref CSV_REGEX: Regex = Regex::new(r"(\d+)").unwrap();
+                }
+
+                CSV_REGEX.captures_iter(&data_text)
                     .map(|cap| cap.at(1).unwrap())
                     .map(|s| {
                         s.parse()
@@ -87,7 +94,7 @@ impl DataCompression {
                 let mut decoded = Vec::new();
 
                 try!(decoder.read_to_end(&mut decoded).map_err(|e| {
-                    de::Error::custom(format!("Could not decode zlib-compressed data: {}", e))
+                    de::Error::custom(format!("could not decode zlib-compressed data: {}", e))
                 }));
 
                 Ok(Cow::Owned(decoded))
@@ -96,12 +103,12 @@ impl DataCompression {
                 use flate2::read::GzDecoder;
 
                 let mut decoder = try!(GzDecoder::new(compressed).map_err(|e| {
-                    de::Error::custom(format!("Could not create gzip-decoder: {}", e))
+                    de::Error::custom(format!("could not create gzip-decoder: {}", e))
                 }));
                 let mut decoded = Vec::new();
 
                 try!(decoder.read_to_end(&mut decoded).map_err(|e| {
-                    de::Error::custom(format!("Could not decode gzip-compressed data: {}", e))
+                    de::Error::custom(format!("could not decode gzip-compressed data: {}", e))
                 }));
 
                 Ok(Cow::Owned(decoded))

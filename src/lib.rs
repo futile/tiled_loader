@@ -8,6 +8,7 @@ extern crate regex;
 extern crate base64;
 extern crate byteorder;
 extern crate flate2;
+#[macro_use] extern crate lazy_static;
 
 use std::path::Path;
 use std::fs::File;
