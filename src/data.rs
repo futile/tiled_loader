@@ -38,9 +38,12 @@ impl DataEncoding {
                 }
 
                 CSV_REGEX.captures_iter(&data_text)
-                    .map(|cap| cap.at(1).unwrap())
+                    .map(|cap| {
+                        cap.at(1)
+                            .ok_or(de::Error::custom(format!("could not match from regex (csv)")))
+                    })
                     .map(|s| {
-                        s.parse()
+                        s?.parse()
                             .map_err(|e| de::Error::custom(format!("could not decode CSV: {}", e)))
                     })
                     .collect()
