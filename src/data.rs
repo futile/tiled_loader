@@ -16,7 +16,7 @@ pub enum DataEncoding {
 }
 
 impl DataEncoding {
-    pub fn decode<E: de::Error>(&self,
+    fn decode<E: de::Error>(&self,
                                 data_content: &Content,
                                 compression: &DataCompression)
                                 -> Result<Vec<u32>, E> {

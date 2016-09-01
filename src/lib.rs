@@ -80,6 +80,27 @@ pub struct Layer {
     pub data: Data,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Object {
+    pub id: u32,
+    pub name: String,
+    pub gid: Option<u32>,
+    pub x: i32,
+    pub y: i32,
+    pub width: u32,
+    pub height: u32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Objectgroup {
+    pub name: String,
+    pub draworder: Option<String>,
+    pub visible: Option<u8>,
+    pub opacity: Option<f32>,
+
+    #[serde(rename(deserialize="object"))]
+    pub objects: Vec<Object>,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Map {
@@ -106,6 +127,9 @@ pub struct Map {
     #[serde(deserialize_with="::properties::deserialize_properties")]
     #[serde(default)]
     pub properties: Option<Properties>,
+
+    #[serde(rename(deserialize="objectgroup"))]
+    pub objectgroups: Vec<Objectgroup>,
 }
 
 impl Map {
