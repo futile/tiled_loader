@@ -89,6 +89,8 @@ pub struct Object {
     pub y: i32,
     pub width: u32,
     pub height: u32,
+    #[serde(default)]
+    pub rotation: f32,
 }
 
 #[derive(Debug, Deserialize)]
