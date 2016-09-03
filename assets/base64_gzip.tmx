@@ -27,8 +27,22 @@
   </tile>
  </tileset>
  <layer name="Tile Layer 1" width="5" height="3">
-  <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA2NgQABhKMYG2JAwMxQDALdA4To8AAAA
+  <data>
+   <tile gid="0"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
+   <tile gid="19"/>
+   <tile gid="19"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
+   <tile gid="6"/>
+   <tile gid="6"/>
+   <tile gid="6"/>
+   <tile gid="3"/>
+   <tile gid="3"/>
   </data>
  </layer>
  <objectgroup draworder="index" name="Object Layer 1" opacity="0.5">

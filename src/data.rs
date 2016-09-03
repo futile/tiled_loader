@@ -17,9 +17,9 @@ pub enum DataEncoding {
 
 impl DataEncoding {
     fn decode<E: de::Error>(&self,
-                                data_content: &Content,
-                                compression: &DataCompression)
-                                -> Result<Vec<u32>, E> {
+                            data_content: &Content,
+                            compression: &DataCompression)
+                            -> Result<Vec<u32>, E> {
         match *self {
             DataEncoding::CSV => {
                 let data_text = match data_content {
@@ -43,8 +43,11 @@ impl DataEncoding {
                             .ok_or(de::Error::custom(format!("could not match from regex (csv)")))
                     })
                     .map(|s| {
-                        s?.parse()
-                            .map_err(|e| de::Error::custom(format!("could not decode CSV: {}", e)))
+                        s?
+                                .parse()
+                                .map_err(|e| {
+                                    de::Error::custom(format!("could not decode CSV: {}", e))
+                                })
                     })
                     .collect()
             }
@@ -71,7 +74,42 @@ impl DataEncoding {
                     })
                     .collect()
             }
-            _ => return Err(de::Error::custom(format!("not yet supported encoding: '{:?}'", self))),
+            DataEncoding::XML => {
+                use std::num::ParseIntError;
+                use std::error::Error;
+
+                let members = match data_content {
+                    &Content::Members(ref members) => members,
+                    _ => {
+                        return Err(de::Error::custom(format!("expected members, got {:?}",
+                                                             data_content)))
+                    }
+                };
+
+                let tiles = match members.get("tile") {
+                    Some(tiles) => tiles,
+                    None => return Ok(Vec::new()),
+                };
+
+                tiles.iter()
+                    .map(|e| {
+                        match e.attributes.get("gid") {
+                            Some(gids) => {
+                                if gids.len() != 1 {
+                                    Err(de::Error::custom(format!("expected exactly one gid, \
+                                                                   got {:?}",
+                                                                  gids)))
+                                } else {
+                                    gids[0].parse().map_err(|e: ParseIntError| {
+                                        de::Error::custom(e.description())
+                                    })
+                                }
+                            }
+                            _ => unimplemented!(),
+                        }
+                    })
+                    .collect()
+            }
         }
 
     }
@@ -165,10 +203,6 @@ impl de::Deserialize for Data {
             }
             None => DataCompression::None,
         };
-
-        if enc == DataEncoding::XML {
-            return Err(de::Error::custom("XML encoding not yet supported"));
-        }
 
         let gids = try!(enc.decode(&data_elem.members, &comp));
 
