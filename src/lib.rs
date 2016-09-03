@@ -19,9 +19,11 @@ use std::io::Read;
 mod util;
 mod data;
 mod properties;
+mod objects;
 
 pub use data::Data;
 pub use properties::Properties;
+pub use objects::{Object, Objectgroup, Ellipse, Polyline, Polygon};
 
 pub type XmlError = serde_xml::Error;
 
@@ -81,30 +83,6 @@ pub struct Layer {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Object {
-    pub id: u32,
-    pub name: String,
-    pub gid: Option<u32>,
-    pub x: i32,
-    pub y: i32,
-    pub width: u32,
-    pub height: u32,
-    #[serde(default)]
-    pub rotation: f32,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Objectgroup {
-    pub name: String,
-    pub draworder: Option<String>,
-    pub visible: Option<u8>,
-    pub opacity: Option<f32>,
-
-    #[serde(rename(deserialize="object"))]
-    pub objects: Vec<Object>,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct Map {
     #[serde(rename(deserialize="tileset"))]
     pub tilesets: Vec<Tileset>,
@@ -134,12 +112,14 @@ pub struct Map {
     pub objectgroups: Vec<Objectgroup>,
 }
 
-impl Map {
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
-        let mut file = File::open(path)?;
-        let mut content = String::new();
-        file.read_to_string(&mut content)?;
+pub fn load_from_str(map_str: &str) -> Result<Map, XmlError> {
+    serde_xml::from_str(map_str)
+}
 
-        Ok(serde_xml::from_str(&content)?)
-    }
+pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
+    let mut file = File::open(path)?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+
+    load_from_str(&content)
 }
