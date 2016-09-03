@@ -21,7 +21,7 @@ mod data;
 mod properties;
 mod objects;
 
-pub use data::Data;
+pub use data::{Data, DataEncoding, DataCompression};
 pub use properties::Properties;
 pub use objects::{Object, Objectgroup, Ellipse, Polyline, Polygon};
 
@@ -29,9 +29,10 @@ pub type XmlError = serde_xml::Error;
 
 #[derive(Debug, Deserialize)]
 pub struct Image {
-    pub source: String,
     pub width: u32,
     pub height: u32,
+
+    pub source: String,
 }
 
 #[derive(Debug)]
@@ -54,16 +55,16 @@ pub struct Tile {
 
 #[derive(Debug, Deserialize)]
 pub struct Tileset {
-    #[serde(rename(deserialize="tile"))]
-    pub tiles: Vec<Tile>,
-    pub image: Option<Image>,
-
     pub firstgid: u32,
     pub name: String,
     pub tilewidth: u32,
     pub tileheight: u32,
     pub tilecount: u32,
     pub columns: u32,
+
+    #[serde(rename(deserialize="tile"))]
+    pub tiles: Vec<Tile>,
+    pub image: Option<Image>,
 }
 
 enum_str!(Orientation {
@@ -84,9 +85,6 @@ pub struct Layer {
 
 #[derive(Debug, Deserialize)]
 pub struct Map {
-    #[serde(rename(deserialize="tileset"))]
-    pub tilesets: Vec<Tileset>,
-
     pub version: String,
 
     pub orientation: Orientation,
@@ -100,6 +98,9 @@ pub struct Map {
     pub tileheight: u32,
 
     pub nextobjectid: u32,
+
+    #[serde(rename(deserialize="tileset"))]
+    pub tilesets: Vec<Tileset>,
 
     #[serde(rename(deserialize="layer"))]
     pub layers: Vec<Layer>,
