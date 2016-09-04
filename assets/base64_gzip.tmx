@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" nextobjectid="17">
+<!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" backgroundcolor="#78890089" nextobjectid="18">
  <properties>
   <property name="e" value=""/>
  </properties>
@@ -26,6 +27,9 @@
    <image width="32" height="32" source="../../crufty/assets/textures/tilesets/cave/tile1.png"/>
   </tile>
  </tileset>
+ <!-- <imagelayer name="Image Layer 1" offsetx="6" offsety="-158"> -->
+ <!--  <image source="../../crufty/assets/textures/sprites/player/stand/p_stand.png" width="66" height="92"/> -->
+ <!-- </imagelayer> -->
  <layer name="Tile Layer 1" width="5" height="3">
   <data>
    <tile gid="0"/>
@@ -45,13 +49,20 @@
    <tile gid="3"/>
   </data>
  </layer>
- <objectgroup draworder="index" name="Object Layer 1" opacity="0.5">
-  <object id="5" name="testTile" gid="35" x="51" y="47" width="32" height="32"/>
-  <object id="1" name="testRect" x="7" y="7" width="34" height="17" rotation="90"/>
-  <object id="12" x="91" y="55">
-   <polyline points="0,0 26,-18 54,-3"/>
+ <objectgroup color="#ffaa00" draworder="index" name="Object Layer 1" opacity="0.5" offsetx="39.5" offsety="-10.2">
+  <properties>
+   <property name="objLayerProp" type="bool" value="false"/>
+  </properties>
+  <object id="5" name="testTile" gid="35" x="168" y="60" width="32" height="32">
+   <properties>
+    <property name="objProp" type="bool" value="false"/>
+   </properties>
   </object>
-  <object id="15" name="aea" type="aeae" x="21" y="48">
+  <object id="1" name="testRect" x="7" y="7" width="34.5" height="17" rotation="90"/>
+  <object id="12" x="342" y="-44" rotation="90">
+   <polyline points="0,0 26,-12 60,-5.33333"/>
+  </object>
+  <object id="15" name="aea" type="aeae" x="21.12" y="48">
    <polygon points="0,0 5,-23 21,-2"/>
   </object>
  </objectgroup>

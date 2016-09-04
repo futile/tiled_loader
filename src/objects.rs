@@ -1,6 +1,8 @@
 use serde::de;
 use regex::Regex;
 
+use ::Properties;
+
 #[derive(Debug, Deserialize)]
 pub struct Ellipse;
 
@@ -8,18 +10,18 @@ pub struct Ellipse;
 pub struct Polyline {
     #[serde(deserialize_with="::objects::deserialize_points")]
     #[serde(default)]
-    pub points: Vec<(i32, i32)>,
+    pub points: Vec<(f32, f32)>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Polygon {
     #[serde(deserialize_with="::objects::deserialize_points")]
     #[serde(default)]
-    pub points: Vec<(i32, i32)>,
+    pub points: Vec<(f32, f32)>,
 }
 
 fn deserialize_points<D: de::Deserializer> (deserializer: &mut D)
-                                            -> Result<Vec<(i32, i32)>, D::Error> {
+                                            -> Result<Vec<(f32, f32)>, D::Error> {
     let points_str: String = de::Deserialize::deserialize(deserializer)?;
 
     lazy_static! {
@@ -49,11 +51,15 @@ pub struct Object {
     #[serde(rename(deserialize="type"))]
     pub type_: Option<String>,
     pub gid: Option<u32>,
-    pub x: i32,
-    pub y: i32,
-    pub width: Option<u32>,
-    pub height: Option<u32>,
+    pub x: f32,
+    pub y: f32,
+    pub width: Option<f32>,
+    pub height: Option<f32>,
     pub rotation: Option<f32>,
+
+    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(default)]
+    pub properties: Option<Properties>,
 
     pub is_ellipse: Option<Ellipse>,
     pub polyline: Option<Polyline>,
@@ -66,6 +72,10 @@ pub struct Objectgroup {
     pub draworder: Option<String>,
     pub visible: Option<u8>,
     pub opacity: Option<f32>,
+
+    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(default)]
+    pub properties: Option<Properties>,
 
     #[serde(rename(deserialize="object"))]
     pub objects: Vec<Object>,
