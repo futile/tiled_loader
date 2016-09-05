@@ -72,6 +72,8 @@ pub struct Objectgroup {
     pub draworder: Option<String>,
     pub visible: Option<u8>,
     pub opacity: Option<f32>,
+    pub offsetx: Option<f32>,
+    pub offsety: Option<f32>,
 
     #[serde(deserialize_with="::properties::deserialize_properties")]
     #[serde(default)]
