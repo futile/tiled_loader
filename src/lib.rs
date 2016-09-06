@@ -83,6 +83,8 @@ pub struct Layer {
     pub data: Data,
 }
 
+pub type Color = String;
+
 #[derive(Debug, Deserialize)]
 pub struct Map {
     pub version: String,
@@ -98,6 +100,8 @@ pub struct Map {
     pub tileheight: u32,
 
     pub nextobjectid: u32,
+
+    pub backgroundcolor: Option<Color>,
 
     #[serde(rename(deserialize="tileset"))]
     pub tilesets: Vec<Tileset>,

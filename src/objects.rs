@@ -1,7 +1,7 @@
 use serde::de;
 use regex::Regex;
 
-use ::Properties;
+use ::{Properties, Color};
 
 #[derive(Debug, Deserialize)]
 pub struct Ellipse;
@@ -74,6 +74,7 @@ pub struct Objectgroup {
     pub opacity: Option<f32>,
     pub offsetx: Option<f32>,
     pub offsety: Option<f32>,
+    pub color: Option<Color>,
 
     #[serde(deserialize_with="::properties::deserialize_properties")]
     #[serde(default)]
