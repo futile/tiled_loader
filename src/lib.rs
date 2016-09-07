@@ -27,6 +27,18 @@ pub use objects::{Object, Objectgroup, Ellipse, Polyline, Polygon};
 
 pub type XmlError = serde_xml::Error;
 
+pub fn load_from_str(map_str: &str) -> Result<Map, XmlError> {
+    serde_xml::from_str(map_str)
+}
+
+pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
+    let mut file = File::open(path)?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+
+    load_from_str(&content)
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Image {
     pub width: u32,
@@ -100,8 +112,6 @@ pub struct Layer {
     pub data: Data,
 }
 
-pub type Color = String;
-
 #[derive(Debug, Deserialize)]
 pub struct Map {
     pub version: String,
@@ -134,14 +144,55 @@ pub struct Map {
     pub objectgroups: Vec<Objectgroup>,
 }
 
-pub fn load_from_str(map_str: &str) -> Result<Map, XmlError> {
-    serde_xml::from_str(map_str)
+#[derive(Debug)]
+pub struct Color {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
 }
 
-pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
-    let mut file = File::open(path)?;
-    let mut content = String::new();
-    file.read_to_string(&mut content)?;
+impl serde::Deserialize for Color {
+    fn deserialize<D: serde::Deserializer>(deserializer: &mut D) -> Result<Color, D::Error> {
+        use regex::Regex;
 
-    load_from_str(&content)
+        let color_str: String = try!(serde::Deserialize::deserialize(deserializer));
+
+        lazy_static! {
+            static ref COLOR_REGEX: Regex =
+                Regex::new(
+                    r"(?x)#
+(?P<alpha>[:xdigit:]{2})?
+(?P<red>[:xdigit:]{2})
+(?P<green>[:xdigit:]{2})
+(?P<blue>[:xdigit:]{2})"
+                ).unwrap();
+        }
+
+        let caps = COLOR_REGEX.captures(&color_str)
+            .ok_or(serde::Error::custom("color did not match regex"))?;
+
+        let red = caps.name("red").ok_or(serde::Error::custom("could not deserialize red"))?;
+        let green = caps.name("green").ok_or(serde::Error::custom("could not deserialize green"))?;
+        let blue = caps.name("blue").ok_or(serde::Error::custom("could not deserialize blue"))?;
+        let alpha = caps.name("alpha");
+
+        let red = u8::from_str_radix(red, 16)
+            .map_err(|e| serde::Error::custom(format!("could not parse red: {}", e)))?;
+        let green = u8::from_str_radix(green, 16)
+            .map_err(|e| serde::Error::custom(format!("could not parse green: {}", e)))?;
+        let blue = u8::from_str_radix(blue, 16)
+            .map_err(|e| serde::Error::custom(format!("could not parse blue: {}", e)))?;
+        let alpha = alpha.map_or(Ok(255), |alph| {
+                u8::from_str_radix(alph, 16)
+                    .map_err(|e| serde::Error::custom(format!("could not parse alpha: {}", e)))
+            })?;
+
+        Ok(Color {
+            r: red,
+            g: green,
+            b: blue,
+            a: alpha,
+        })
+    }
 }

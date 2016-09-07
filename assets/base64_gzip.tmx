@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
-<map version="1.0" orientation="hexagonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" hexsidelength="-3" staggeraxis="y" staggerindex="even" backgroundcolor="#005500" nextobjectid="18">
+<map version="1.0" orientation="hexagonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" hexsidelength="-3" staggeraxis="y" staggerindex="even" backgroundcolor="#08005500" nextobjectid="18">
  <properties>
   <property name="e" value=""/>
  </properties>
@@ -27,7 +27,7 @@
    <image width="32" height="32" source="../../crufty/assets/textures/tilesets/cave/tile1.png"/>
   </tile>
  </tileset>
- <objectgroup color="#ffaa00" draworder="index" name="Object Layer 1" opacity="0.5" offsetx="39.5" offsety="-10.2">
+ <objectgroup color="#010203" draworder="index" name="Object Layer 1" opacity="0.5" offsetx="39.5" offsety="-10.2">
   <properties>
    <property name="objLayerProp" type="bool" value="false"/>
   </properties>

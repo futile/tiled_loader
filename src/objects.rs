@@ -1,7 +1,7 @@
 use serde::de;
 use regex::Regex;
 
-use ::{Properties, Color};
+use ::::{Properties, Color};
 
 #[derive(Debug, Deserialize)]
 pub struct Ellipse;
