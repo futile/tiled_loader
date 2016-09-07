@@ -74,6 +74,23 @@ enum_str!(Orientation {
     Staggered("staggered"),
 });
 
+enum_str!(StaggerAxis {
+    X("x"),
+    Y("y"),
+});
+
+enum_str!(StaggerIndex {
+    Even("even"),
+    Odd("odd"),
+});
+
+enum_str!(TileRenderOrder {
+    RightDown("right-down"),
+    RightUp("right-up"),
+    LeftDown("left-down"),
+    LeftUp("left-up"),
+});
+
 #[derive(Debug, Deserialize)]
 pub struct Layer {
     pub name: String,
@@ -90,17 +107,17 @@ pub struct Map {
     pub version: String,
 
     pub orientation: Orientation,
-
-    pub renderorder: String,
+    pub renderorder: TileRenderOrder,
+    pub hexsidelength: Option<i32>,
+    pub staggeraxis: Option<StaggerAxis>,
+    pub staggerindex: Option<StaggerIndex>,
 
     pub width: u32,
     pub height: u32,
-
     pub tilewidth: u32,
     pub tileheight: u32,
 
     pub nextobjectid: u32,
-
     pub backgroundcolor: Option<Color>,
 
     #[serde(rename(deserialize="tileset"))]
