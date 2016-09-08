@@ -44,7 +44,7 @@
    <polygon points="0,0 5,-23 21,-2"/>
   </object>
  </objectgroup>
- <layer name="Tile Layer 1" width="5" height="3">
+ <layer name="Tile Layer 1" width="5" height="3" opacity="0.9">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAAA2NgQABhKMYG2JAwMxQDALdA4To8AAAA
   </data>

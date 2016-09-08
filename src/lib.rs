@@ -108,6 +108,7 @@ pub struct Layer {
     pub name: String,
     pub width: u32,
     pub height: u32,
+    pub opacity: Option<f32>,
 
     pub data: Data,
 }
