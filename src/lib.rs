@@ -40,6 +40,7 @@ pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Image {
     pub width: u32,
     pub height: u32,
@@ -56,6 +57,7 @@ pub enum Property {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Tile {
     pub id: u32,
 
@@ -66,6 +68,7 @@ pub struct Tile {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Tileset {
     pub firstgid: u32,
     pub name: String,
@@ -104,6 +107,7 @@ enum_str!(TileRenderOrder {
 });
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Layer {
     pub name: String,
     pub width: u32,
@@ -114,6 +118,7 @@ pub struct Layer {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Map {
     pub version: String,
 
