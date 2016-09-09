@@ -5,7 +5,7 @@
   <property name="e" value=""/>
  </properties>
  <tileset firstgid="1" name="multi" tilewidth="32" tileheight="32" tilecount="16" columns="4">
-  <image source="../../crufty/assets/textures/tilesets/cave/multi.png" width="128" height="128"/>
+  <image source="multi.png" width="128" height="128"/>
   <tile id="0">
    <properties>
     <property name="aeae" value=""/>
@@ -14,7 +14,7 @@
   </tile>
  </tileset>
  <tileset firstgid="17" name="multi2" tilewidth="32" tileheight="32" tilecount="16" columns="4">
-  <image source="../../crufty/assets/textures/tilesets/cave/multi.png" width="128" height="128"/>
+  <image source="multi.png" width="128" height="128"/>
  </tileset>
  <tileset firstgid="33" name="blubb" tilewidth="32" tileheight="32" tilecount="3" columns="0">
   <tile id="0">
