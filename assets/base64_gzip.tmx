@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
-<map version="1.0" orientation="hexagonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" hexsidelength="-3" staggeraxis="y" staggerindex="even" backgroundcolor="#08005500" nextobjectid="18">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" backgroundcolor="#08005500" nextobjectid="18">
  <properties>
   <property name="e" value=""/>
  </properties>
@@ -49,4 +49,10 @@
    H4sIAAAAAAAAA2NgQABhKMYG2JAwMxQDALdA4To8AAAA
   </data>
  </layer>
+ <imagelayer name="Image Layer 1" visible="0">
+  <image source="multi.png" width="128" height="128"/>
+  <properties>
+   <property name="ae" type="bool" value="true"/>
+  </properties>
+ </imagelayer>
 </map>

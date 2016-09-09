@@ -44,6 +44,7 @@ pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
 pub struct Image {
     pub width: u32,
     pub height: u32,
+    pub trans: Option<Color>,
 
     pub source: String,
 }
@@ -119,6 +120,22 @@ pub struct Layer {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct ImageLayer {
+    pub name: String,
+    pub opacity: Option<f32>,
+    pub offsetx: Option<f32>,
+    pub offsety: Option<f32>,
+    pub visible: Option<u8>,
+
+    pub image: Image,
+
+    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(default)]
+    pub properties: Option<Properties>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Map {
     pub version: String,
 
@@ -148,6 +165,9 @@ pub struct Map {
 
     #[serde(rename(deserialize="objectgroup"))]
     pub objectgroups: Vec<Objectgroup>,
+
+    #[serde(rename(deserialize="imagelayer"))]
+    pub imagelayers: Vec<ImageLayer>,
 }
 
 #[derive(Debug)]
@@ -167,7 +187,7 @@ impl serde::Deserialize for Color {
         lazy_static! {
             static ref COLOR_REGEX: Regex =
                 Regex::new(
-                    r"(?x)#
+                    r"(?x)#?
 (?P<alpha>[:xdigit:]{2})?
 (?P<red>[:xdigit:]{2})
 (?P<green>[:xdigit:]{2})
