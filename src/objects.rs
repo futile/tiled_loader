@@ -65,7 +65,7 @@ pub struct Object {
     #[serde(default)]
     pub properties: Option<Properties>,
 
-    pub is_ellipse: Option<Ellipse>,
+    pub ellipse: Option<()>,
     pub polyline: Option<Polyline>,
     pub polygon: Option<Polygon>,
 }

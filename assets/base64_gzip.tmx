@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" backgroundcolor="#08005500" nextobjectid="18">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" backgroundcolor="#08005500" nextobjectid="19">
  <properties>
   <property name="e" value=""/>
  </properties>
@@ -42,6 +42,9 @@
   </object>
   <object id="15" name="aea" type="aeae" x="21.12" y="42">
    <polygon points="0,0 5,-23 21,-2"/>
+  </object>
+  <object id="18" x="143.5" y="43.2">
+   <ellipse/>
   </object>
  </objectgroup>
  <layer name="Tile Layer 1" width="5" height="3" opacity="0.9">

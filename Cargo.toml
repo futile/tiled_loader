@@ -6,7 +6,7 @@ authors = ["Felix Rath <felixr@archlinux.info>"]
 [dependencies]
 serde = "0.8.4"
 serde_macros = "0.8"
-serde_xml = "0.8.1"
+serde_xml = "0.9"
 regex = "0.1.71"
 base64 = "0.2.1"
 byteorder = "0.5.3"
