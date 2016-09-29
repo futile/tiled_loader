@@ -1,9 +1,10 @@
-#![feature(custom_derive, plugin)]
+#![feature(rustc_macro)]
 #![feature(question_mark)]
-#![plugin(serde_macros)]
 
 extern crate serde_xml;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate regex;
 extern crate base64;
 extern crate byteorder;
