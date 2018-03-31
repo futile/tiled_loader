@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" nextobjectid="1">
+ <layer name="Tile Layer 1" width="5" height="3">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAfAAAAPAAB
+  </data>
+ </layer>
+ <objectgroup color="#001e00" name="Object Layer 1"/>
+ <imagelayer name="Image Layer 1">
+  <image source="../../crufty/assets/textures/sprites/player/jump/p_jump.png" trans="55ff7f" width="67" height="94"/>
+ </imagelayer>
+</map>

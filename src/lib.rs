@@ -1,5 +1,4 @@
-#![feature(rustc_macro)]
-#![feature(question_mark)]
+#![feature(proc_macro)]
 
 extern crate serde_xml;
 extern crate serde;
