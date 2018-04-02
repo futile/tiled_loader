@@ -23,7 +23,7 @@ pub struct Polygon {
     pub points: Vec<(f32, f32)>,
 }
 
-fn deserialize_points<D: de::Deserializer> (deserializer: &mut D)
+fn deserialize_points<'de, D: de::Deserializer<'de>> (deserializer: D)
                                             -> Result<Vec<(f32, f32)>, D::Error> {
     let points_str: String = de::Deserialize::deserialize(deserializer)?;
 
@@ -33,12 +33,14 @@ fn deserialize_points<D: de::Deserializer> (deserializer: &mut D)
 
     POINTS_REGEX.captures_iter(&points_str)
         .map(|cap| {
-            let first = cap.at(2)
+            let first = cap.get(2)
                 .ok_or(de::Error::custom(format!("could not match from regex (points)")))?
+                .as_str()
                 .parse()
                 .map_err(|e| de::Error::custom(format!("could not decode points: {}", e)))?;
-            let second = cap.at(3)
+            let second = cap.get(3)
                 .ok_or(de::Error::custom(format!("could not match from regex (points)")))?
+                .as_str()
                 .parse()
                 .map_err(|e| de::Error::custom(format!("could not decode points: {}", e)))?;
 
@@ -85,7 +87,7 @@ pub struct Objectgroup {
     #[serde(default)]
     pub properties: Option<Properties>,
 
-    #[serde(rename(deserialize="object"))]
+    #[serde(rename(deserialize="object"), default)]
     pub objects: Vec<Object>,
 }
 

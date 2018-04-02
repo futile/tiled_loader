@@ -4,8 +4,6 @@ use regex::Regex;
 use base64;
 use byteorder::{ReadBytesExt, LittleEndian};
 
-use serde_xml::value::{Element, Content};
-
 use std::borrow::Cow;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -17,18 +15,11 @@ pub enum DataEncoding {
 
 impl DataEncoding {
     fn decode<E: de::Error>(&self,
-                            data_content: &Content,
+                            data_text: &str,
                             compression: &DataCompression)
                             -> Result<Vec<u32>, E> {
         match *self {
             DataEncoding::CSV => {
-                let data_text = match data_content {
-                    &Content::Text(ref s) => s,
-                    _ => {
-                        return Err(de::Error::custom("expected text inside data when decoding CSV"))
-                    }
-                };
-
                 if compression != &DataCompression::None {
                     return Err(de::Error::custom("compression with csv-encoding not allowed"));
                 }
@@ -39,26 +30,20 @@ impl DataEncoding {
 
                 CSV_REGEX.captures_iter(&data_text)
                     .map(|cap| {
-                        cap.at(1)
+                        cap.get(1)
                             .ok_or(de::Error::custom(format!("could not match from regex (csv)")))
                     })
                     .map(|s| {
                         s?
-                                .parse()
-                                .map_err(|e| {
-                                    de::Error::custom(format!("could not decode CSV: {}", e))
-                                })
+                            .as_str()
+                            .parse()
+                            .map_err(|e| {
+                                de::Error::custom(format!("could not decode CSV: {}", e))
+                            })
                     })
                     .collect()
             }
             DataEncoding::Base64 => {
-                let data_text = match data_content {
-                    &Content::Text(ref s) => s.trim(),
-                    _ => {
-                        return Err(de::Error::custom("expected text inside data when decoding XML"))
-                    }
-                };
-
                 let decoded_raw: Vec<u8> = try!(base64::decode(&data_text)
                     .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e))));
 
@@ -74,44 +59,44 @@ impl DataEncoding {
                     })
                     .collect()
             }
-            DataEncoding::XML => {
-                use std::num::ParseIntError;
-                use std::error::Error;
+            _ => panic!("not yet implemented")
+            // DataEncoding::XML => {
+            //     use std::num::ParseIntError;
+            //     use std::error::Error;
 
-                let members = match data_content {
-                    &Content::Members(ref members) => members,
-                    _ => {
-                        return Err(de::Error::custom(format!("expected members, got {:?}",
-                                                             data_content)))
-                    }
-                };
+            //     let members = match data_content {
+            //         &Content::Members(ref members) => members,
+            //         _ => {
+            //             return Err(de::Error::custom(format!("expected members, got {:?}",
+            //                                                  data_content)))
+            //         }
+            //     };
 
-                let tiles = match members.get("tile") {
-                    Some(tiles) => tiles,
-                    None => return Ok(Vec::new()),
-                };
+            //     let tiles = match members.get("tile") {
+            //         Some(tiles) => tiles,
+            //         None => return Ok(Vec::new()),
+            //     };
 
-                tiles.iter()
-                    .map(|e| {
-                        match e.attributes.get("gid") {
-                            Some(gids) => {
-                                if gids.len() != 1 {
-                                    Err(de::Error::custom(format!("expected exactly one gid, \
-                                                                   got {:?}",
-                                                                  gids)))
-                                } else {
-                                    gids[0].parse().map_err(|e: ParseIntError| {
-                                        de::Error::custom(e.description())
-                                    })
-                                }
-                            }
-                            _ => unimplemented!(),
-                        }
-                    })
-                    .collect()
-            }
+            //     tiles.iter()
+            //         .map(|e| {
+            //             match e.attributes.get("gid") {
+            //                 Some(gids) => {
+            //                     if gids.len() != 1 {
+            //                         Err(de::Error::custom(format!("expected exactly one gid, \
+            //                                                        got {:?}",
+            //                                                       gids)))
+            //                     } else {
+            //                         gids[0].parse().map_err(|e: ParseIntError| {
+            //                             de::Error::custom(e.description())
+            //                         })
+            //                     }
+            //                 }
+            //                 _ => unimplemented!(),
+            //             }
+            //         })
+            //         .collect()
+            // }
         }
-
     }
 }
 
@@ -143,9 +128,7 @@ impl DataCompression {
             DataCompression::Gzip => {
                 use flate2::read::GzDecoder;
 
-                let mut decoder = try!(GzDecoder::new(compressed).map_err(|e| {
-                    de::Error::custom(format!("could not create gzip-decoder: {}", e))
-                }));
+                let mut decoder = GzDecoder::new(compressed);
                 let mut decoded = Vec::new();
 
                 try!(decoder.read_to_end(&mut decoded).map_err(|e| {
@@ -166,45 +149,77 @@ pub struct Data {
     pub tile_gids: Vec<u32>,
 }
 
-impl de::Deserialize for Data {
-    fn deserialize<D: de::Deserializer>(deserializer: &mut D) -> Result<Data, D::Error> {
-        let data_elem: Element = try!(de::Deserialize::deserialize(deserializer));
+impl<'de> de::Deserialize<'de> for Data {
+    fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Data, D::Error> {
+        #[derive(Debug, Deserialize)]
+        #[serde(rename="tile")]
+        struct SimpleTile {
+            gid: u32,
+        }
 
-        let enc = match data_elem.attributes.get("encoding") {
-            Some(v) => {
-                if v.len() != 1 {
-                    return Err(de::Error::custom(format!("expected exactly one encoding, got: \
-                                                          '{:?}'",
-                                                         v)));
+        #[derive(Debug, Deserialize)]
+        #[serde(untagged)]
+        enum DataContent {
+            Str(String),
+            Tiles(Vec<SimpleTile>)
+        };
+
+        fn string_or_struct<'de, D>(deserializer: D) -> Result<DataContent, D::Error>
+            where D: de::Deserializer<'de>,
+        {
+            struct StringOrStruct(::serde::export::PhantomData<fn() -> DataContent>);
+
+            impl<'de> de::Visitor<'de> for StringOrStruct {
+                type Value = DataContent;
+
+                fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                    formatter.write_str("string or map")
                 }
 
-                match &*v[0] {
-                    "base64" => DataEncoding::Base64,
-                    "csv" => DataEncoding::CSV,
-                    s => return Err(de::Error::custom(format!("unexpected encoding: '{}'", s))),
+                fn visit_str<E>(self, value: &str) -> Result<DataContent, E>
+                    where E: de::Error
+                {
+                    Ok(DataContent::Str(value.into()))
                 }
-            }
+
+                fn visit_map<M>(self, _visitor: M) -> Result<DataContent, M::Error>
+                    where M: de::MapAccess<'de>
+                {
+                    Err(de::Error::custom("currently not possible to decode XML data"))
+                }
+            };
+
+            deserializer.deserialize_any(StringOrStruct(::serde::export::PhantomData))
+        }
+
+        #[derive(Debug, Deserialize)]
+        struct DataImpl {
+            encoding: Option<String>,
+            compression: Option<String>,
+            #[serde(rename="$value", deserialize_with="string_or_struct")]
+            value: DataContent,
+        };
+
+        let val: DataImpl = de::Deserialize::deserialize(deserializer)?;
+
+        let enc = match val.encoding.as_ref().map(|s| s.as_str()) {
+            Some("base64") => DataEncoding::Base64,
+            Some("csv") => DataEncoding::CSV,
+            Some(e) => return Err(de::Error::custom(format!("unexpected encoding: '{}'", e))),
             None => DataEncoding::XML,
         };
 
-        let comp = match data_elem.attributes.get("compression") {
-            Some(v) => {
-                if v.len() != 1 {
-                    return Err(de::Error::custom(format!("expected exactly one compression, \
-                                                          got: '{:?}'",
-                                                         v)));
-                }
-
-                match &*v[0] {
-                    "zlib" => DataCompression::Zlib,
-                    "gzip" => DataCompression::Gzip,
-                    s => return Err(de::Error::custom(format!("unexpected compression: '{}'", s))),
-                }
-            }
+        let comp = match val.compression.as_ref().map(|s| s.as_str()) {
+            Some("zlib") => DataCompression::Zlib,
+            Some("gzip") => DataCompression::Gzip,
+            Some(e) => return Err(de::Error::custom(format!("unexpected compression: '{}'", e))),
             None => DataCompression::None,
         };
 
-        let gids = try!(enc.decode(&data_elem.members, &comp));
+        let gids = match val.value {
+            DataContent::Str(s) => enc.decode(&s, &comp)?,
+            DataContent::Tiles(ts) => ts.iter().map(|t| t.gid).collect(),
+        };
 
         Ok(Data {
             encoding: enc,

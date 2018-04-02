@@ -3,47 +3,47 @@
  <properties>
   <property name="e" value=""/>
  </properties>
- <tileset firstgid="1" name="multi" tilewidth="32" tileheight="32" tilecount="16" columns="4">
-  <image source="../textures/tilesets/cave/multi.png" width="128" height="128"/>
-  <tile id="0">
-   <properties>
-    <property name="aeae" value=""/>
-    <property name="aeaex" type="string" value=""/>
-    <property name="solid" type="bool" value="true"/>
-   </properties>
-  </tile>
- </tileset>
- <tileset firstgid="17" name="multi2" tilewidth="32" tileheight="32" tilecount="16" columns="4">
-  <image source="../textures/tilesets/cave/multi.png" width="128" height="128"/>
- </tileset>
- <tileset firstgid="33" name="blubb" tilewidth="32" tileheight="32" tilecount="3" columns="0">
-  <tile id="0">
-   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/>
-  </tile>
-  <tile id="1">
-   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/>
-  </tile>
-  <tile id="2">
-   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/>
-  </tile>
- </tileset>
+ <!-- <tileset firstgid="1" name="multi" tilewidth="32" tileheight="32" tilecount="16" columns="4"> -->
+ <!--  <image source="../textures/tilesets/cave/multi.png" width="128" height="128"/> -->
+ <!--  <tile id="0"> -->
+ <!--   <properties> -->
+ <!--    <property name="aeae" value=""/> -->
+ <!--    <property name="aeaex" type="string" value=""/> -->
+ <!--    <property name="solid" type="bool" value="true"/> -->
+ <!--   </properties> -->
+ <!--  </tile> -->
+ <!-- </tileset> -->
+ <!-- <tileset firstgid="17" name="multi2" tilewidth="32" tileheight="32" tilecount="16" columns="4"> -->
+ <!--  <image source="../textures/tilesets/cave/multi.png" width="128" height="128"/> -->
+ <!-- </tileset> -->
+ <!-- <tileset firstgid="33" name="blubb" tilewidth="32" tileheight="32" tilecount="3" columns="0"> -->
+ <!--  <tile id="0"> -->
+ <!--   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/> -->
+ <!--  </tile> -->
+ <!--  <tile id="1"> -->
+ <!--   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/> -->
+ <!--  </tile> -->
+ <!--  <tile id="2"> -->
+ <!--   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/> -->
+ <!--  </tile> -->
+ <!-- </tileset> -->
  <layer name="Tile Layer 1" width="5" height="3">
-  <data encoding="base64">
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="19"/> -->
-   <!-- <tile gid="19"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="0"/> -->
-   <!-- <tile gid="6"/> -->
-   <!-- <tile gid="6"/> -->
-   <!-- <tile gid="6"/> -->
-   <!-- <tile gid="3"/> -->
-   <!-- <tile gid="3"/> -->
-  </data>
+   <data>
+     <tile gid="0"/>
+     <tile gid="0"/>
+     <tile gid="0"/>
+     <tile gid="19"/>
+     <tile gid="19"/>
+     <tile gid="0"/>
+     <tile gid="0"/>
+     <tile gid="0"/>
+     <tile gid="0"/>
+     <tile gid="0"/>
+     <tile gid="6"/>
+     <tile gid="6"/>
+     <tile gid="6"/>
+     <tile gid="3"/>
+     <tile gid="3"/>
+   </data>
  </layer>
 </map>

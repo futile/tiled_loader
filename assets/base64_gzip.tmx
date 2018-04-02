@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" backgroundcolor="#08005500" nextobjectid="19">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="257" height="3" tilewidth="32" tileheight="32" backgroundcolor="#08005500" nextobjectid="19">
  <properties>
   <property name="e" value=""/>
  </properties>

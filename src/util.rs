@@ -18,23 +18,26 @@ macro_rules! enum_str {
         //     }
         // }
 
-        impl ::serde::Deserialize for $name {
-            fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-                where D: ::serde::Deserializer,
+        impl<'de> ::serde::Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                where D: ::serde::Deserializer<'de>,
             {
                 struct Visitor;
 
-                impl ::serde::de::Visitor for Visitor {
+                impl<'dev> ::serde::de::Visitor<'dev> for Visitor {
                     type Value = $name;
 
-                    fn visit_str<E>(&mut self, value: &str) -> Result<$name, E>
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                        formatter.write_str("expected a valid variant")
+                    }
+
+                    fn visit_str<E>(self, value: &str) -> Result<$name, E>
                         where E: ::serde::de::Error,
                     {
                         match value {
                             $( $str => Ok($name::$variant), )*
-                            _ => Err(E::invalid_value(
-                                &format!("unknown {} variant: {}",
-                                stringify!($name), value))),
+                                _ => Err(E::invalid_value(serde::de::Unexpected::Other(value),
+                                                          &"expected a valid variant"))
                         }
                     }
                 }

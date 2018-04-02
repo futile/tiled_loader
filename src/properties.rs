@@ -5,7 +5,7 @@ use super::Property;
 
 pub type Properties = HashMap<String, Property>;
 
-pub fn deserialize_properties<D: de::Deserializer>(deserializer: &mut D)
+pub fn deserialize_properties<'de, D: de::Deserializer<'de>>(deserializer: D)
                                                    -> Result<Option<Properties>, D::Error> {
     #[derive(Debug, Deserialize)]
     pub struct RawProperty {
