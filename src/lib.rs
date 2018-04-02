@@ -135,6 +135,20 @@ pub struct ImageLayer {
 }
 
 #[derive(Debug, Deserialize)]
+pub enum MapLayer {
+    #[serde(rename="layer")]
+    Layer(Layer),
+    #[serde(rename="objectgroup")]
+    ObjectGroup(Objectgroup),
+    #[serde(rename="imagelayer")]
+    ImageLayer(ImageLayer),
+    #[serde(rename="properties", deserialize_with="::properties::deserialize_properties")]
+    Properties(Option<Properties>),
+    #[serde(rename="tileset")]
+    Tileset(Tileset),
+}
+
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Map {
     pub version: String,
@@ -153,21 +167,8 @@ pub struct Map {
     pub nextobjectid: u32,
     pub backgroundcolor: Option<Color>,
 
-    #[serde(rename(deserialize="tileset"), default)]
-    pub tilesets: Vec<Tileset>,
-
-    #[serde(rename(deserialize="layer"), default)]
-    pub layers: Vec<Layer>,
-
-    #[serde(deserialize_with="::properties::deserialize_properties")]
-    #[serde(default)]
-    pub properties: Option<Properties>,
-
-    #[serde(rename(deserialize="objectgroup"), default)]
-    pub objectgroups: Vec<Objectgroup>,
-
-    #[serde(rename(deserialize="imagelayer"), default)]
-    pub imagelayers: Vec<ImageLayer>,
+    #[serde(rename="$value")]
+    pub layers: Vec<MapLayer>
 }
 
 #[derive(Debug)]
