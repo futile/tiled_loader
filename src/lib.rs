@@ -1,5 +1,3 @@
-#![feature(proc_macro)]
-
 extern crate serde_xml_rs;
 extern crate serde;
 #[macro_use]
@@ -183,7 +181,7 @@ impl<'de> serde::Deserialize<'de> for Color {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Color, D::Error> {
         use regex::Regex;
 
-        let color_str: String = try!(serde::Deserialize::deserialize(deserializer));
+        let color_str: String = serde::Deserialize::deserialize(deserializer)?;
 
         lazy_static! {
             static ref COLOR_REGEX: Regex =

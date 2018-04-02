@@ -22,7 +22,7 @@ pub fn deserialize_properties<'de, D: de::Deserializer<'de>>(deserializer: D)
         properties: Vec<RawProperty>,
     }
 
-    let raw_props: RawProperties = try!(de::Deserialize::deserialize(deserializer));
+    let raw_props: RawProperties = de::Deserialize::deserialize(deserializer)?;
     let mut props = Properties::new();
 
     use std::num::ParseFloatError;
@@ -38,19 +38,19 @@ pub fn deserialize_properties<'de, D: de::Deserializer<'de>>(deserializer: D)
         let val = match &raw_prop.type_[..] {
             "" | "string" => Property::String(raw_prop.value),
             "float" => {
-                Property::Float(try!(raw_prop.value
+                Property::Float(raw_prop.value
                     .parse()
-                    .map_err(|e: ParseFloatError| de::Error::custom(e.description()))))
+                    .map_err(|e: ParseFloatError| de::Error::custom(e.description()))?)
             }
             "bool" => {
-                Property::Bool(try!(raw_prop.value
+                Property::Bool(raw_prop.value
                     .parse()
-                    .map_err(|e: ParseBoolError| de::Error::custom(e.description()))))
+                    .map_err(|e: ParseBoolError| de::Error::custom(e.description()))?)
             }
             "int" => {
-                Property::Int(try!(raw_prop.value
+                Property::Int(raw_prop.value
                     .parse()
-                    .map_err(|e: ParseIntError| de::Error::custom(e.description()))))
+                    .map_err(|e: ParseIntError| de::Error::custom(e.description()))?)
             }
             s => return Err(de::Error::custom(format!("unexpected property type: '{}'", s))),
         };

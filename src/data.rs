@@ -44,10 +44,10 @@ impl DataEncoding {
                     .collect()
             }
             DataEncoding::Base64 => {
-                let decoded_raw: Vec<u8> = try!(base64::decode(&data_text)
-                    .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e))));
+                let decoded_raw: Vec<u8> = base64::decode(&data_text)
+                    .map_err(|e| de::Error::custom(format!("could not decode base64: {}", e)))?;
 
-                let decompressed = try!(compression.decompress(&decoded_raw.as_slice()));
+                let decompressed = compression.decompress(&decoded_raw.as_slice())?;
 
                 decompressed.chunks(4)
                     .map(|mut bytes| {
@@ -119,9 +119,9 @@ impl DataCompression {
                 let mut decoder = ZlibDecoder::new(compressed);
                 let mut decoded = Vec::new();
 
-                try!(decoder.read_to_end(&mut decoded).map_err(|e| {
+                decoder.read_to_end(&mut decoded).map_err(|e| {
                     de::Error::custom(format!("could not decode zlib-compressed data: {}", e))
-                }));
+                })?;
 
                 Ok(Cow::Owned(decoded))
             }
@@ -131,9 +131,9 @@ impl DataCompression {
                 let mut decoder = GzDecoder::new(compressed);
                 let mut decoded = Vec::new();
 
-                try!(decoder.read_to_end(&mut decoded).map_err(|e| {
+                decoder.read_to_end(&mut decoded).map_err(|e| {
                     de::Error::custom(format!("could not decode gzip-compressed data: {}", e))
-                }));
+                })?;
 
                 Ok(Cow::Owned(decoded))
             }
