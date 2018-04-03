@@ -4,11 +4,9 @@ use regex::Regex;
 use ::{Properties, Color};
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Ellipse;
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Polyline {
     #[serde(deserialize_with="::objects::deserialize_points")]
     #[serde(default)]
@@ -16,7 +14,6 @@ pub struct Polyline {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Polygon {
     #[serde(deserialize_with="::objects::deserialize_points")]
     #[serde(default)]
@@ -50,7 +47,6 @@ fn deserialize_points<'de, D: de::Deserializer<'de>> (deserializer: D)
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Object {
     pub id: u32,
     pub name: Option<String>,
@@ -73,7 +69,6 @@ pub struct Object {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Objectgroup {
     pub name: String,
     pub draworder: Option<String>,

@@ -18,6 +18,8 @@ mod util;
 mod data;
 mod properties;
 mod objects;
+mod map;
+mod color;
 
 pub use data::{Data, DataEncoding, DataCompression};
 pub use properties::Properties;
@@ -38,7 +40,6 @@ pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Image {
     pub width: u32,
     pub height: u32,
@@ -56,7 +57,6 @@ pub enum Property {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Tile {
     pub id: u32,
 
@@ -67,7 +67,6 @@ pub struct Tile {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Tileset {
     pub firstgid: u32,
     pub name: String,
@@ -106,7 +105,6 @@ enum_str!(TileRenderOrder {
 });
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct Layer {
     pub name: String,
     pub width: u32,
@@ -117,7 +115,6 @@ pub struct Layer {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct ImageLayer {
     pub name: String,
     pub opacity: Option<f32>,
@@ -132,22 +129,14 @@ pub struct ImageLayer {
     pub properties: Option<Properties>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub enum MapLayer {
-    #[serde(rename="layer")]
     Layer(Layer),
-    #[serde(rename="objectgroup")]
     ObjectGroup(Objectgroup),
-    #[serde(rename="imagelayer")]
     ImageLayer(ImageLayer),
-    #[serde(rename="properties", deserialize_with="::properties::deserialize_properties")]
-    Properties(Option<Properties>),
-    #[serde(rename="tileset")]
-    Tileset(Tileset),
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug)]
 pub struct Map {
     pub version: String,
 
@@ -165,8 +154,11 @@ pub struct Map {
     pub nextobjectid: u32,
     pub backgroundcolor: Option<Color>,
 
-    #[serde(rename="$value")]
-    pub layers: Vec<MapLayer>
+    pub properties: Option<Properties>,
+
+    pub tilesets: Vec<Tileset>,
+
+    pub layers: Vec<MapLayer>,
 }
 
 #[derive(Debug)]
@@ -175,52 +167,4 @@ pub struct Color {
     g: u8,
     b: u8,
     a: u8,
-}
-
-impl<'de> serde::Deserialize<'de> for Color {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Color, D::Error> {
-        use regex::Regex;
-
-        let color_str: String = serde::Deserialize::deserialize(deserializer)?;
-
-        lazy_static! {
-            static ref COLOR_REGEX: Regex =
-                Regex::new(
-                    r"(?x)#?
-(?P<alpha>[[:xdigit:]]{2})?
-(?P<red>[[:xdigit:]]{2})
-(?P<green>[[:xdigit:]]{2})
-(?P<blue>[[:xdigit:]]{2})"
-                ).unwrap();
-        }
-
-        use serde::de::Error;
-
-        let caps = COLOR_REGEX.captures(&color_str)
-            .unwrap();
-            // .ok_or(Error::custom(format!("color did not match regex: {}", &color_str)))?;
-
-        let red = caps.name("red").ok_or(Error::custom("could not deserialize red"))?.into();
-        let green = caps.name("green").ok_or(Error::custom("could not deserialize green"))?.into();
-        let blue = caps.name("blue").ok_or(Error::custom("could not deserialize blue"))?.into();
-        let alpha = caps.name("alpha");
-
-        let red = u8::from_str_radix(red, 16)
-            .map_err(|e| Error::custom(format!("could not parse red: {}", e)))?;
-        let green = u8::from_str_radix(green, 16)
-            .map_err(|e| Error::custom(format!("could not parse green: {}", e)))?;
-        let blue = u8::from_str_radix(blue, 16)
-            .map_err(|e| Error::custom(format!("could not parse blue: {}", e)))?;
-        let alpha = alpha.map_or(Ok(255), |alph| {
-                u8::from_str_radix(alph.into(), 16)
-                    .map_err(|e| Error::custom(format!("could not parse alpha: {}", e)))
-            })?;
-
-        Ok(Color {
-            r: red,
-            g: green,
-            b: blue,
-            a: alpha,
-        })
-    }
 }
