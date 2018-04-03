@@ -2,7 +2,7 @@ use serde::de;
 use regex::Regex;
 
 use base64;
-use byteorder::{ReadBytesExt, LittleEndian};
+use byteorder::{LittleEndian, ReadBytesExt};
 
 use std::borrow::Cow;
 
@@ -14,32 +14,34 @@ pub enum DataEncoding {
 }
 
 impl DataEncoding {
-    fn decode<E: de::Error>(&self,
-                            data_text: &str,
-                            compression: &DataCompression)
-                            -> Result<Vec<u32>, E> {
+    fn decode<E: de::Error>(
+        &self,
+        data_text: &str,
+        compression: &DataCompression,
+    ) -> Result<Vec<u32>, E> {
         match *self {
             DataEncoding::CSV => {
                 if compression != &DataCompression::None {
-                    return Err(de::Error::custom("compression with csv-encoding not allowed"));
+                    return Err(de::Error::custom(
+                        "compression with csv-encoding not allowed",
+                    ));
                 }
 
                 lazy_static! {
                     static ref CSV_REGEX: Regex = Regex::new(r"(\d+)").unwrap();
                 }
 
-                CSV_REGEX.captures_iter(&data_text)
+                CSV_REGEX
+                    .captures_iter(&data_text)
                     .map(|cap| {
-                        cap.get(1)
-                            .ok_or(de::Error::custom(format!("could not match from regex (csv)")))
+                        cap.get(1).ok_or(de::Error::custom(format!(
+                            "could not match from regex (csv)"
+                        )))
                     })
                     .map(|s| {
-                        s?
-                            .as_str()
+                        s?.as_str()
                             .parse()
-                            .map_err(|e| {
-                                de::Error::custom(format!("could not decode CSV: {}", e))
-                            })
+                            .map_err(|e| de::Error::custom(format!("could not decode CSV: {}", e)))
                     })
                     .collect()
             }
@@ -49,17 +51,20 @@ impl DataEncoding {
 
                 let decompressed = compression.decompress(&decoded_raw.as_slice())?;
 
-                decompressed.chunks(4)
+                decompressed
+                    .chunks(4)
                     .map(|mut bytes| {
                         bytes.read_u32::<LittleEndian>().map_err(|e| {
-                            de::Error::custom(format!("could not decode from little \
-                                                       endian(base64): {}",
-                                                      e))
+                            de::Error::custom(format!(
+                                "could not decode from little \
+                                 endian(base64): {}",
+                                e
+                            ))
                         })
                     })
                     .collect()
             }
-            _ => panic!("not yet implemented")
+            _ => panic!("not yet implemented"),
             // DataEncoding::XML => {
             //     use std::num::ParseIntError;
             //     use std::error::Error;
@@ -152,7 +157,7 @@ pub struct Data {
 impl<'de> de::Deserialize<'de> for Data {
     fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Data, D::Error> {
         #[derive(Debug, Deserialize)]
-        #[serde(rename="tile")]
+        #[serde(rename = "tile")]
         struct SimpleTile {
             gid: u32,
         }
@@ -161,11 +166,12 @@ impl<'de> de::Deserialize<'de> for Data {
         #[serde(untagged)]
         enum DataContent {
             Str(String),
-            Tiles(Vec<SimpleTile>)
+            Tiles(Vec<SimpleTile>),
         };
 
         fn string_or_struct<'de, D>(deserializer: D) -> Result<DataContent, D::Error>
-            where D: de::Deserializer<'de>,
+        where
+            D: de::Deserializer<'de>,
         {
             struct StringOrStruct(::serde::export::PhantomData<fn() -> DataContent>);
 
@@ -177,15 +183,19 @@ impl<'de> de::Deserialize<'de> for Data {
                 }
 
                 fn visit_str<E>(self, value: &str) -> Result<DataContent, E>
-                    where E: de::Error
+                where
+                    E: de::Error,
                 {
                     Ok(DataContent::Str(value.into()))
                 }
 
                 fn visit_map<M>(self, _visitor: M) -> Result<DataContent, M::Error>
-                    where M: de::MapAccess<'de>
+                where
+                    M: de::MapAccess<'de>,
                 {
-                    Err(de::Error::custom("currently not possible to decode XML data"))
+                    Err(de::Error::custom(
+                        "currently not possible to decode XML data",
+                    ))
                 }
             };
 
@@ -196,7 +206,7 @@ impl<'de> de::Deserialize<'de> for Data {
         struct DataImpl {
             encoding: Option<String>,
             compression: Option<String>,
-            #[serde(rename="$value", deserialize_with="string_or_struct")]
+            #[serde(rename = "$value", deserialize_with = "string_or_struct")]
             value: DataContent,
         };
 
@@ -212,7 +222,12 @@ impl<'de> de::Deserialize<'de> for Data {
         let comp = match val.compression.as_ref().map(|s| s.as_str()) {
             Some("zlib") => DataCompression::Zlib,
             Some("gzip") => DataCompression::Gzip,
-            Some(e) => return Err(de::Error::custom(format!("unexpected compression: '{}'", e))),
+            Some(e) => {
+                return Err(de::Error::custom(format!(
+                    "unexpected compression: '{}'",
+                    e
+                )))
+            }
             None => DataCompression::None,
         };
 

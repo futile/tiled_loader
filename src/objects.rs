@@ -1,42 +1,48 @@
 use serde::de;
 use regex::Regex;
 
-use ::{Properties, Color};
+use {Color, Properties};
 
 #[derive(Debug, Deserialize)]
 pub struct Ellipse;
 
 #[derive(Debug, Deserialize)]
 pub struct Polyline {
-    #[serde(deserialize_with="::objects::deserialize_points")]
+    #[serde(deserialize_with = "::objects::deserialize_points")]
     #[serde(default)]
     pub points: Vec<(f32, f32)>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Polygon {
-    #[serde(deserialize_with="::objects::deserialize_points")]
+    #[serde(deserialize_with = "::objects::deserialize_points")]
     #[serde(default)]
     pub points: Vec<(f32, f32)>,
 }
 
-fn deserialize_points<'de, D: de::Deserializer<'de>> (deserializer: D)
-                                            -> Result<Vec<(f32, f32)>, D::Error> {
+fn deserialize_points<'de, D: de::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<(f32, f32)>, D::Error> {
     let points_str: String = de::Deserialize::deserialize(deserializer)?;
 
     lazy_static! {
         static ref POINTS_REGEX: Regex = Regex::new(r"((-?\d+),(-?\d+))").unwrap();
     }
 
-    POINTS_REGEX.captures_iter(&points_str)
+    POINTS_REGEX
+        .captures_iter(&points_str)
         .map(|cap| {
             let first = cap.get(2)
-                .ok_or(de::Error::custom(format!("could not match from regex (points)")))?
+                .ok_or(de::Error::custom(format!(
+                    "could not match from regex (points)"
+                )))?
                 .as_str()
                 .parse()
                 .map_err(|e| de::Error::custom(format!("could not decode points: {}", e)))?;
             let second = cap.get(3)
-                .ok_or(de::Error::custom(format!("could not match from regex (points)")))?
+                .ok_or(de::Error::custom(format!(
+                    "could not match from regex (points)"
+                )))?
                 .as_str()
                 .parse()
                 .map_err(|e| de::Error::custom(format!("could not decode points: {}", e)))?;
@@ -50,7 +56,7 @@ fn deserialize_points<'de, D: de::Deserializer<'de>> (deserializer: D)
 pub struct Object {
     pub id: u32,
     pub name: Option<String>,
-    #[serde(rename(deserialize="type"))]
+    #[serde(rename(deserialize = "type"))]
     pub type_: Option<String>,
     pub gid: Option<u32>,
     pub x: f32,
@@ -59,7 +65,7 @@ pub struct Object {
     pub height: Option<f32>,
     pub rotation: Option<f32>,
 
-    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(deserialize_with = "::properties::deserialize_properties")]
     #[serde(default)]
     pub properties: Option<Properties>,
 
@@ -78,11 +84,10 @@ pub struct Objectgroup {
     pub offsety: Option<f32>,
     pub color: Option<Color>,
 
-    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(deserialize_with = "::properties::deserialize_properties")]
     #[serde(default)]
     pub properties: Option<Properties>,
 
-    #[serde(rename(deserialize="object"), default)]
+    #[serde(rename(deserialize = "object"), default)]
     pub objects: Vec<Object>,
 }
-

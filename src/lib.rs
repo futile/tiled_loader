@@ -1,11 +1,11 @@
-extern crate serde_xml_rs;
 extern crate serde;
+extern crate serde_xml_rs;
 #[macro_use]
 extern crate serde_derive;
-extern crate regex;
 extern crate base64;
 extern crate byteorder;
 extern crate flate2;
+extern crate regex;
 #[macro_use]
 extern crate lazy_static;
 
@@ -21,9 +21,9 @@ mod objects;
 mod map;
 mod color;
 
-pub use data::{Data, DataEncoding, DataCompression};
+pub use data::{Data, DataCompression, DataEncoding};
 pub use properties::Properties;
-pub use objects::{Object, Objectgroup, Ellipse, Polyline, Polygon};
+pub use objects::{Ellipse, Object, Objectgroup, Polygon, Polyline};
 
 pub type XmlError = serde_xml_rs::Error;
 
@@ -60,7 +60,7 @@ pub enum Property {
 pub struct Tile {
     pub id: u32,
 
-    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(deserialize_with = "::properties::deserialize_properties")]
     #[serde(default)]
     pub properties: Option<Properties>,
     pub image: Option<Image>,
@@ -75,7 +75,7 @@ pub struct Tileset {
     pub tilecount: u32,
     pub columns: u32,
 
-    #[serde(rename(deserialize="tile"), default)]
+    #[serde(rename(deserialize = "tile"), default)]
     pub tiles: Vec<Tile>,
     pub image: Option<Image>,
 }
@@ -124,7 +124,7 @@ pub struct ImageLayer {
 
     pub image: Image,
 
-    #[serde(deserialize_with="::properties::deserialize_properties")]
+    #[serde(deserialize_with = "::properties::deserialize_properties")]
     #[serde(default)]
     pub properties: Option<Properties>,
 }

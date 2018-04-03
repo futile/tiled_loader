@@ -1,18 +1,19 @@
 use serde::de;
 
-use super::{Orientation, TileRenderOrder, StaggerAxis, StaggerIndex, Color, MapLayer, Layer, Objectgroup, ImageLayer, Tileset, Properties};
+use super::{Color, ImageLayer, Layer, MapLayer, Objectgroup, Orientation, Properties, StaggerAxis,
+            StaggerIndex, TileRenderOrder, Tileset};
 
 #[derive(Debug, Deserialize)]
 enum AnyMapLayer {
-    #[serde(rename="layer")]
+    #[serde(rename = "layer")]
     Layer(Layer),
-    #[serde(rename="objectgroup")]
+    #[serde(rename = "objectgroup")]
     ObjectGroup(Objectgroup),
-    #[serde(rename="imagelayer")]
+    #[serde(rename = "imagelayer")]
     ImageLayer(ImageLayer),
-    #[serde(rename="properties", deserialize_with="::properties::deserialize_properties")]
+    #[serde(rename = "properties", deserialize_with = "::properties::deserialize_properties")]
     Properties(Option<Properties>),
-    #[serde(rename="tileset")]
+    #[serde(rename = "tileset")]
     Tileset(Tileset),
 }
 
@@ -34,8 +35,8 @@ struct MapImpl {
     nextobjectid: u32,
     backgroundcolor: Option<Color>,
 
-    #[serde(rename="$value")]
-    layers: Vec<AnyMapLayer>
+    #[serde(rename = "$value")]
+    layers: Vec<AnyMapLayer>,
 }
 
 impl<'de> de::Deserialize<'de> for super::Map {
@@ -54,7 +55,7 @@ impl<'de> de::Deserialize<'de> for super::Map {
                     } else {
                         return Err(de::Error::custom("multiple properties encountered"));
                     }
-                },
+                }
                 AnyMapLayer::Tileset(t) => tilesets.push(t),
                 AnyMapLayer::Layer(l) => layers.push(MapLayer::Layer(l)),
                 AnyMapLayer::ImageLayer(il) => layers.push(MapLayer::ImageLayer(il)),
