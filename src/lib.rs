@@ -1,20 +1,20 @@
 extern crate serde;
 extern crate serde_xml_rs;
+
 #[macro_use]
 extern crate serde_derive;
+
 extern crate base64;
 extern crate byteorder;
 extern crate flate2;
 extern crate regex;
+
 #[macro_use]
 extern crate lazy_static;
 
-use std::path::Path;
-use std::fs::File;
-use std::io::Read;
-
 #[macro_use]
 mod util;
+
 mod data;
 mod properties;
 mod objects;
@@ -31,7 +31,10 @@ pub fn load_from_str(map_str: &str) -> Result<Map, XmlError> {
     serde_xml_rs::from_str(map_str)
 }
 
-pub fn load_from_path<P: AsRef<Path>>(path: P) -> Result<Map, XmlError> {
+pub fn load_from_path<P: AsRef<std::path::Path>>(path: P) -> Result<Map, XmlError> {
+    use std::fs::File;
+    use std::io::Read;
+
     let mut file = File::open(path)?;
     let mut content = String::new();
     file.read_to_string(&mut content)?;
@@ -136,6 +139,9 @@ pub enum MapLayer {
     ImageLayer(ImageLayer),
 }
 
+/// A `Map` is the main type returned when loading a tiled file. It contains the
+/// specified attributes and properties of the map, as well as all layers in the
+/// correct order (as specified in tiled.)
 #[derive(Debug)]
 pub struct Map {
     pub version: String,
