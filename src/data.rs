@@ -169,27 +169,27 @@ impl<'de> de::Deserialize<'de> for Data {
             Tiles(Vec<SimpleTile>),
         };
 
-        fn string_or_struct<'de, D>(deserializer: D) -> Result<DataContent, D::Error>
+        fn string_or_struct<'de, D>(deserializer: D) -> Result<Option<DataContent>, D::Error>
         where
             D: de::Deserializer<'de>,
         {
-            struct StringOrStruct(::serde::export::PhantomData<fn() -> DataContent>);
+            struct StringOrStruct(::serde::export::PhantomData<fn() -> Option<DataContent>>);
 
             impl<'de> de::Visitor<'de> for StringOrStruct {
-                type Value = DataContent;
+                type Value = Option<DataContent>;
 
                 fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                     formatter.write_str("string or map")
                 }
 
-                fn visit_str<E>(self, value: &str) -> Result<DataContent, E>
+                fn visit_str<E>(self, value: &str) -> Result<Option<DataContent>, E>
                 where
                     E: de::Error,
                 {
-                    Ok(DataContent::Str(value.into()))
+                    Ok(Some(DataContent::Str(value.into())))
                 }
 
-                fn visit_map<M>(self, _visitor: M) -> Result<DataContent, M::Error>
+                fn visit_map<M>(self, _visitor: M) -> Result<Option<DataContent>, M::Error>
                 where
                     M: de::MapAccess<'de>,
                 {
@@ -206,8 +206,8 @@ impl<'de> de::Deserialize<'de> for Data {
         struct DataImpl {
             encoding: Option<String>,
             compression: Option<String>,
-            #[serde(rename = "$value", deserialize_with = "string_or_struct")]
-            value: DataContent,
+            #[serde(rename = "$value", deserialize_with = "string_or_struct", default)]
+            value: Option<DataContent>,
         };
 
         let val: DataImpl = de::Deserialize::deserialize(deserializer)?;
@@ -232,8 +232,9 @@ impl<'de> de::Deserialize<'de> for Data {
         };
 
         let gids = match val.value {
-            DataContent::Str(s) => enc.decode(&s, &comp)?,
-            DataContent::Tiles(ts) => ts.iter().map(|t| t.gid).collect(),
+            Some(DataContent::Str(s)) => enc.decode(&s, &comp)?,
+            Some(DataContent::Tiles(ts)) => ts.iter().map(|t| t.gid).collect(),
+            None => Vec::new(),
         };
 
         Ok(Data {
